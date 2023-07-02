@@ -215,7 +215,7 @@ DEFINE_uint64(level0_column_compaction_stop_size, rocksdb::NvmSetup().Level0_col
 
 DEFINE_bool(report_write_latency, false,"");
 
-
+DEFINE_bool(throughput, false, "Output Throughput");
 
 /////
 DEFINE_uint64(request_rate_limit, 20000, "Number of request IOPS, default 20K iops");
@@ -4065,6 +4065,10 @@ void VerifyDBFromDB(std::string& truth_db_name) {
 
     uint64_t per_write_start_time = 0;
 
+    int64_t bytes_this_batch = 0;
+    auto start_time = std::chrono::steady_clock::now();
+    auto last_report_time = start_time;
+    long long bytes_this_second = 0;
 
     while (!duration.Done(entries_per_batch_)) {
       if (duration.GetStage() != stage) {
@@ -4077,7 +4081,7 @@ void VerifyDBFromDB(std::string& truth_db_name) {
           }
         }
       }
-
+      bytes_this_batch = 0;
       size_t id = thread->rand.Next() % num_key_gens;
       DBWithColumnFamilies* db_with_cfh = SelectDBWithCfh(id);
       batch.Clear();
@@ -4115,7 +4119,7 @@ void VerifyDBFromDB(std::string& truth_db_name) {
           batch.Put(db_with_cfh->GetCfh(rand_num), key,
                     gen.Generate(value_size_));
         }
-        bytes += value_size_ + key_size_;
+        bytes_this_batch += value_size_ + key_size_;
         ++num_written;
         //printf("put:%s\n",key.ToString(true).c_str());
         if (writes_per_range_tombstone_ > 0 &&
@@ -4165,6 +4169,21 @@ void VerifyDBFromDB(std::string& truth_db_name) {
       }
       if (!use_blob_db_) {
         s = db_with_cfh->db->Write(write_options_, &batch);
+      }
+
+      bytes += bytes_this_batch;
+      if(FLAGS_throughput){
+        bytes_this_second += bytes_this_batch;
+        auto now = std::chrono::steady_clock::now();
+        auto cur_elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(now - start_time).count();
+        auto last_elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(last_report_time - start_time).count();
+        auto diff_time = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_report_time).count();
+        if (cur_elapsed_time / 1000 != last_elapsed_time / 1000) {
+          double throughput = bytes_this_second * 1.0 / 1024 / 1024 / (diff_time / 1000.0);
+          std::cout << "Throughput " << cur_elapsed_time / 1000 << " second: " << throughput << " MB per second" << std::endl;
+          last_report_time = now;
+          bytes_this_second = 0;
+        }
       }
       if (FLAGS_report_fillrandom_latency) {   //entries_per_batch_ need equal 1
 

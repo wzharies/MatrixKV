@@ -42,7 +42,7 @@ quoted_perl_command = $(subst ','\'',$(perl_command))
 # `make install`
 
 # Set the default DEBUG_LEVEL to 1
-DEBUG_LEVEL?=1
+DEBUG_LEVEL?=0
 
 ifeq ($(MAKECMDGOALS),dbg)
 	DEBUG_LEVEL=2
@@ -308,16 +308,16 @@ endif
 # This (the first rule) must depend on "all".
 default: all
 
-WARNING_FLAGS = -W -Wextra -Wall -Wsign-compare -Wshadow \
+WARNING_FLAGS = -W -Wextra -Wall -Wsign-compare -Wshadow -Wno-unused-result \
   -Wunused-parameter
 
 ifeq ($(PLATFORM), OS_OPENBSD)
 	WARNING_FLAGS += -Wno-unused-lambda-capture
 endif
 
-ifndef DISABLE_WARNING_AS_ERROR
-	WARNING_FLAGS += -Werror
-endif
+# ifndef DISABLE_WARNING_AS_ERROR
+# 	WARNING_FLAGS += -Werror
+# endif
 
 
 ifdef LUA_PATH
@@ -614,7 +614,7 @@ ifeq ($(LIBNAME),)
 ifeq ($(DEBUG_LEVEL),0)
         LIBNAME=librocksdb
 else
-        LIBNAME=librocksdb_debug
+        LIBNAME=librocksdb
 endif
 endif
 LIBRARY = ${LIBNAME}.a
