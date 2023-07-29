@@ -5,8 +5,8 @@ value_array=(1024 4096 16384 65536)
 test_all_size=81920000000   #8G
 
 
-bench_db_path="/media/nvme1/pm_test"
-wal_dir="/media/nvme1/pm_test"
+bench_db_path="/media/nvme/pm_test"
+wal_dir="/media/nvme/pm_test"
 bench_value="4096"
 bench_compression="none" #"snappy,none"
 

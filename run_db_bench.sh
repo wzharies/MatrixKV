@@ -12,7 +12,7 @@ db_include=$db_path/include
 ycsb_path=$db_path/ycsbc
 
 sata_path=/tmp/pm_test
-ssd_path=/media/nvme1/pm_test
+ssd_path=/media/nvme/pm_test
 pm_path=/mnt/pmem0.1/pm_test
 # leveldb_path=/tmp/leveldb-wzh
 leveldb_path=$pm_path
@@ -32,6 +32,7 @@ value_size=1024
 num_kvs=$((10*$MB))
 write_buffer_size=$((64*$MB))
 max_file_size=$((128*$MB))
+max_open_files=$((2000))
 key_size=8
 pm_size=$((180*$GB))
 use_pm=1
@@ -84,26 +85,54 @@ WRITE80G-64K() {
 }
 WRITE80G_8GNVM() {
     leveldb_path=$ssd_path;
-    value_size=$((4*$KB))
+    value_size=$((1*$KB))
     num_kvs=$((80*$GB / $value_size))
     max_bytes_for_level_base=$((8*$GB))
     flush_ssd=1
 }
 WRITE80G_16GNVM() {
     leveldb_path=$ssd_path;
-    value_size=$((4*$KB))
+    value_size=$((1*$KB))
     num_kvs=$((80*$GB / $value_size))
     max_bytes_for_level_base=$((16*$GB))
     flush_ssd=1
 }
 WRITE80G_32GNVM() {
     leveldb_path=$ssd_path;
-    value_size=$((4*$KB))
+    value_size=$((1*$KB))
     num_kvs=$((80*$GB / $value_size))
     max_bytes_for_level_base=$((32*$GB))
     flush_ssd=1
 }
 WRITE80G_64GNVM() {
+    leveldb_path=$ssd_path;
+    value_size=$((1*$KB))
+    num_kvs=$((80*$GB / $value_size))
+    max_bytes_for_level_base=$((64*$GB))
+    flush_ssd=1
+}
+WRITE80G_8GNVM_4K() {
+    leveldb_path=$ssd_path;
+    value_size=$((4*$KB))
+    num_kvs=$((80*$GB / $value_size))
+    max_bytes_for_level_base=$((8*$GB))
+    flush_ssd=1
+}
+WRITE80G_16GNVM_4K() {
+    leveldb_path=$ssd_path;
+    value_size=$((4*$KB))
+    num_kvs=$((80*$GB / $value_size))
+    max_bytes_for_level_base=$((16*$GB))
+    flush_ssd=1
+}
+WRITE80G_32GNVM_4K() {
+    leveldb_path=$ssd_path;
+    value_size=$((4*$KB))
+    num_kvs=$((80*$GB / $value_size))
+    max_bytes_for_level_base=$((32*$GB))
+    flush_ssd=1
+}
+WRITE80G_64GNVM_4K() {
     leveldb_path=$ssd_path;
     value_size=$((4*$KB))
     num_kvs=$((80*$GB / $value_size))
@@ -121,7 +150,6 @@ RUN_DB_BENCH() {
                 --db=$leveldb_path \
                 --wal_dir=$leveldb_path \
                 --num=$num_kvs \
-                --reads=$num_kvs \
                 --value_size=$value_size \
                 --reads=$bench_readnum \
                 --compression_type=$bench_compression \
@@ -201,57 +229,57 @@ MAKE() {
 DB_BENCH_TEST() {
     echo "------------db_bench------------"
     benchmarks="fillrandom,stats,readrandom,stats"
-    # echo "------256B random write/read-----"
-    # output_file=$output_path/Rnd_NVM_256B
-    # WRITE80G-256B
+    echo "------256B random write/read-----"
+    output_file=$output_path/Rnd_NVM_256B
+    WRITE80G-256B
+    RUN_DB_BENCH
+
+    # echo "------1KB random write/read-----"
+    # output_file=$output_path/Rnd_NVM_1K
+    # WRITE80G
     # RUN_DB_BENCH
 
-    echo "------1KB random write/read-----"
-    output_file=$output_path/Rnd_NVM_1K
-    WRITE80G
-    RUN_DB_BENCH
+    # echo "------4KB random write/read-----"
+    # output_file=$output_path/Rnd_NVM_4K
+    # WRITE80G-4K
+    # RUN_DB_BENCH
 
-    echo "------4KB random write/read-----"
-    output_file=$output_path/Rnd_NVM_4K
-    WRITE80G-4K
-    RUN_DB_BENCH
+    # echo "------16KB random write/read-----"
+    # output_file=$output_path/Rnd_NVM_16K
+    # WRITE80G-16K
+    # RUN_DB_BENCH
 
-    echo "------16KB random write/read-----"
-    output_file=$output_path/Rnd_NVM_16K
-    WRITE80G-16K
-    RUN_DB_BENCH
-
-    echo "------64KB random write/read-----"
-    output_file=$output_path/Rnd_NVM_64K
-    WRITE80G-64K
-    RUN_DB_BENCH
+    # echo "------64KB random write/read-----"
+    # output_file=$output_path/Rnd_NVM_64K
+    # WRITE80G-64K
+    # RUN_DB_BENCH
 
 
     benchmarks="fillseq,stats,readseq,stats"
-    # echo "------256B random write/read-----"
-    # output_file=$output_path/Seq_NVM_256B
-    # WRITE80G-256B
+    echo "------256B random write/read-----"
+    output_file=$output_path/Seq_NVM_256B
+    WRITE80G-256B
+    RUN_DB_BENCH
+
+    # echo "------1KB sequential write/read-----"
+    # output_file=$output_path/Seq_NVM_1K
+    # WRITE80G
     # RUN_DB_BENCH
 
-    echo "------1KB sequential write/read-----"
-    output_file=$output_path/Seq_NVM_1K
-    WRITE80G
-    RUN_DB_BENCH
+    # echo "------4KB sequential write/read-----"
+    # output_file=$output_path/Seq_NVM_4K
+    # WRITE80G-4K
+    # RUN_DB_BENCH
 
-    echo "------4KB sequential write/read-----"
-    output_file=$output_path/Seq_NVM_4K
-    WRITE80G-4K
-    RUN_DB_BENCH
+    # echo "------16KB sequential write/read-----"
+    # output_file=$output_path/Seq_NVM_16K
+    # WRITE80G-16K
+    # RUN_DB_BENCH
 
-    echo "------16KB sequential write/read-----"
-    output_file=$output_path/Seq_NVM_16K
-    WRITE80G-16K
-    RUN_DB_BENCH
-
-    echo "------64KB sequential write/read-----"
-    output_file=$output_path/Seq_NVM_64K
-    WRITE80G-64K
-    RUN_DB_BENCH
+    # echo "------64KB sequential write/read-----"
+    # output_file=$output_path/Seq_NVM_64K
+    # WRITE80G-64K
+    # RUN_DB_BENCH
 
     CLEAN_DB
 }
@@ -277,24 +305,94 @@ DB_BENCH_THROUGHPUT() {
 DB_BENCH_TEST_FLUSHSSD() {
     echo "----------db_bench_flushssd----------"
     benchmarks="fillrandom,stats,readrandom,stats"
+    echo "---8GNVM--1KB random write/read---"
+    output_file=$output_path/NVM8G_Rnd_1K
+    WRITE80G_8GNVM
+    RUN_DB_BENCH
+
+    echo "---16GNVM--1KB random write/read---"
+    output_file=$output_path/NVM16G_Rnd_1K
+    WRITE80G_16GNVM
+    RUN_DB_BENCH
+
+    echo "---32GNVM--1KB random write/read---"
+    output_file=$output_path/NVM32G_Rnd_1K
+    WRITE80G_32GNVM
+    RUN_DB_BENCH
+
+    echo "---64GNVM--1KB random write/read---"
+    output_file=$output_path/NVM64G_Rnd_1K
+    WRITE80G_64GNVM
+    RUN_DB_BENCH
+
+    benchmarks="fillseq,stats,readseq,stats"
+    echo "---8GNVM--1KB seq write/read---"
+    output_file=$output_path/NVM8G_Seq_1K
+    WRITE80G_8GNVM
+    RUN_DB_BENCH
+
+    echo "---16GNVM--1KB seq write/read---"
+    output_file=$output_path/NVM16G_Seq_1K
+    WRITE80G_16GNVM
+    RUN_DB_BENCH
+
+    echo "---32GNVM--1KB seq write/read---"
+    output_file=$output_path/NVM32G_Seq_1K
+    WRITE80G_32GNVM
+    RUN_DB_BENCH
+
+    echo "---64GNVM--1KB seq write/read---"
+    output_file=$output_path/NVM64G_Seq_1K
+    WRITE80G_64GNVM
+    RUN_DB_BENCH
+
+    flush_ssd=0
+    leveldb_path=$pm_path;
+    CLEAN_DB
+}
+
+DB_BENCH_TEST_FLUSHSSD_4K() {
+    echo "----------db_bench_flushssd----------"
+    benchmarks="fillrandom,stats,readrandom,stats"
     echo "---8GNVM--4KB random write/read---"
     output_file=$output_path/NVM8G_Rnd_4K
-    WRITE80G_8GNVM
+    WRITE80G_8GNVM_4K
     RUN_DB_BENCH
 
     echo "---16GNVM--4KB random write/read---"
     output_file=$output_path/NVM16G_Rnd_4K
-    WRITE80G_16GNVM
+    WRITE80G_16GNVM_4K
     RUN_DB_BENCH
 
     echo "---32GNVM--4KB random write/read---"
     output_file=$output_path/NVM32G_Rnd_4K
-    WRITE80G_32GNVM
+    WRITE80G_32GNVM_4K
     RUN_DB_BENCH
 
     echo "---64GNVM--4KB random write/read---"
     output_file=$output_path/NVM64G_Rnd_4K
-    WRITE80G_64GNVM
+    WRITE80G_64GNVM_4K
+    RUN_DB_BENCH
+
+    benchmarks="fillseq,stats,readseq,stats"
+    echo "---8GNVM--4KB seq write/read---"
+    output_file=$output_path/NVM8G_Seq_4K
+    WRITE80G_8GNVM_4K
+    RUN_DB_BENCH
+
+    echo "---16GNVM--4KB seq write/read---"
+    output_file=$output_path/NVM16G_Seq_4K
+    WRITE80G_16GNVM_4K
+    RUN_DB_BENCH
+
+    echo "---32GNVM--4KB seq write/read---"
+    output_file=$output_path/NVM32G_Seq_4K
+    WRITE80G_32GNVM_4K
+    RUN_DB_BENCH
+
+    echo "---64GNVM--4KB seq write/read---"
+    output_file=$output_path/NVM64G_Seq_4K
+    WRITE80G_64GNVM_4K
     RUN_DB_BENCH
 
     flush_ssd=0
@@ -334,35 +432,108 @@ YCSB_TEST_LATENCY(){
 
 YCSB_TEST_SSD(){
     cd $ycsb_path
+    leveldb_path=$ssd_path
+
     echo "------------YCSB------------"
-    echo "-----1KB YCSB SSD-----"
-    output_file=$output_path/YCSB_1KB_SSD
-    ycsb_input=1KB_ALL_SSD
-    RUN_YCSB
+    # echo "-----1KB YCSB SSD-----"
+    # output_file=$output_path/YCSB_1KB_SSD
+    # ycsb_input=1KB_ALL_SSD
+    # RUN_YCSB
 
     echo "-----4KB YCSB SSD-----"
     output_file=$output_path/YCSB_4KB_SSD
     ycsb_input=4KB_ALL_SSD
     RUN_YCSB
+
+    leveldb_path=$pm_path
     cd ..
+}
+
+DATA_SIZE_ANALYSIS(){
+    echo "------data size analysis-------"
+    benchmarks="fillrandom,stats,readrandom,stats"
+    value_size=$((1*$KB))
+    leveldb_path=$ssd_path;
+
+    echo "---- 40GB 8GNVM----"
+    output_file=$output_path/data_40G
+    max_bytes_for_level_base=$((8*$GB))
+    write_buffer_size=$((64*$MB))
+    num_kvs=$((40*$GB / $value_size))
+    RUN_DB_BENCH
+
+    echo "---- 80GB 16GNVM----"
+    output_file=$output_path/data_80G
+    max_bytes_for_level_base=$((16*$GB))
+    write_buffer_size=$((64*$MB))
+    num_kvs=$((80*$GB / $value_size))
+    RUN_DB_BENCH
+
+    echo "---- 120GB 24GNVM----"
+    output_file=$output_path/data_120G
+    max_bytes_for_level_base=$((24*$GB))
+    write_buffer_size=$((64*$MB))
+    num_kvs=$((120*$GB / $value_size))
+    RUN_DB_BENCH
+
+    echo "---- 160GB 32GNVM----"
+    output_file=$output_path/data_160G
+    max_bytes_for_level_base=$((32*$GB))
+    write_buffer_size=$((64*$MB))
+    num_kvs=$((160*$GB / $value_size))
+    RUN_DB_BENCH
+
+    echo "---- 200GB 40GNVM----"
+    output_file=$output_path/data_200G
+    max_bytes_for_level_base=$((40*$GB))
+    write_buffer_size=$((64*$MB))
+    num_kvs=$((200*$GB / $value_size))
+    RUN_DB_BENCH
+
+    max_bytes_for_level_base=$((8*$GB))
+    leveldb_path=$pm_path;
+}
+
+SMALL_VALUE_TEST(){
+    echo "------data size analysis-------"
+    benchmarks="fillrandom,readrandom,stats"
+    num_kvs=$((100*$MB))
+
+    echo "---- key100M_8B----"
+    output_file=$output_path/key100M_8B
+    value_size=$((8))
+    RUN_DB_BENCH
+
+    echo "---- key100M_32B----"
+    output_file=$output_path/key100M_32B
+    value_size=$((32))
+    RUN_DB_BENCH
+
+    echo "---- key100M_128B----"
+    output_file=$output_path/key100M_128B
+    value_size=$((128))
+    RUN_DB_BENCH
 }
 
 MAKE
 SET_OUTPUT_PATH
 
-echo "如果程序出问题请make clean"
+# echo "如果程序出问题请make clean"
 
-echo "chapter 4.1"
-DB_BENCH_TEST
-DB_BENCH_THROUGHPUT
+# echo "chapter 4.1"
+# DB_BENCH_TEST
+# DB_BENCH_THROUGHPUT
+# SMALL_VALUE_TEST
 
-echo "chapter 4.2"
-YCSB_TEST
-YCSB_TEST_LATENCY
+# echo "chapter 4.2"
+# YCSB_TEST
+# YCSB_TEST_LATENCY
 
 echo "chapter 4.3"
 DB_BENCH_TEST_FLUSHSSD
-# YCSB_TEST_SSD
+# DB_BENCH_TEST_FLUSHSSD_4K
+YCSB_TEST_SSD
+DATA_SIZE_ANALYSIS
 
 CLEAN_DB
 # sudo cp build/libleveldb.a /usr/local/lib/

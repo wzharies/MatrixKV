@@ -1,5 +1,5 @@
 CC=/usr/bin/g++
-CFLAGS=-std=c++17 -g -Wall -pthread -I./
+CFLAGS=-std=c++17 -g -o2 -Wall -pthread -I./
 CXXFLAGS=-std=c++17 -g -Wall -pthread -I./
 LDFLAGS= -lpthread -lrocksdb -lz -lsnappy -lnuma -lpmem
 SUBDIRS= core db 

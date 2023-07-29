@@ -1,5 +1,5 @@
 CC=g++
-CXXFLAGS=-std=c++17 -c -g -Wall -fgnu-tm
+CXXFLAGS=-std=c++17 -c -g -o2 -Wall -fgnu-tm
 INCLUDES=-I../
 SOURCES=$(wildcard *.cc)
 OBJECTS=$(SOURCES:.cc=.o)
